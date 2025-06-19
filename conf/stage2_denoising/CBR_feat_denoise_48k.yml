@@ -1,0 +1,38 @@
+$include:
+  - conf/base_feat_denoise.yml
+  - conf/training.yml
+  - conf/training_500k.yml
+  - conf/dataset_EARS_noisy_48k.yml
+
+
+## Load pre-trained stage1 model
+pretrained_path: "/data2/yoongi/NoiseRobustVRVQ/stage1/CBR_48k/latest"
+
+## depr.
+train_with_clean: true
+
+DAC_VRVQ_FeatureDenoise.clean_train: true ## if false, self.freeze_non_denoising_blocks()
+DAC_VRVQ_FeatureDenoise.denoise_block_idx: [4] ## Denoising block after this encoder block index
+
+DAC_VRVQ_FeatureDenoise.model_type: "CBR"
+
+## depr.
+# DAC_VRVQ_FeatureDenoise.feature_denoise_mode: "masking_mamba_mask_4"
+
+# Quantization
+DAC_VRVQ_FeatureDenoise.n_codebooks: 8
+DAC_VRVQ_FeatureDenoise.codebook_size: 1024
+DAC_VRVQ_FeatureDenoise.codebook_dim: 8
+DAC_VRVQ_FeatureDenoise.quantizer_dropout: 0.5
+
+DAC_VRVQ_FeatureDenoise.n_denoise_layers: 10
+DAC_VRVQ_FeatureDenoise.denoise_proj_channels: 128 ## Dimension for Mamba
+
+
+lambdas: ## For generator. 
+  mel/loss: 15.0
+  adv/feat_loss: 2.0
+  adv/gen_loss: 1.0
+  vq/commitment_loss: 0.25
+  vq/codebook_loss: 1.0
+  enc_feat/feat_loss: 0.1

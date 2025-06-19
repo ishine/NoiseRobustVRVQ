@@ -1,0 +1,56 @@
+$include:
+  - conf/base_feat_denoise.yml
+  - conf/training.yml
+  - conf/training_500k.yml
+  - conf/dataset_EARS_noisy_16k.yml
+
+## Load pre-trained stage1 model
+pretrained_path: "/data2/yoongi/NoiseRobustVRVQ/stage1/VBR_16k/latest"
+train_with_clean: true
+
+DAC_VRVQ_FeatureDenoise.clean_train: true ## if false, self.freeze_non_denoising_blocks()
+DAC_VRVQ_FeatureDenoise.denoise_block_idx: [4]
+
+
+DAC_VRVQ_FeatureDenoise.model_type: "VBR"
+
+
+DAC_VRVQ_FeatureDenoise.full_codebook_rate: 0.25
+DAC_VRVQ_FeatureDenoise.quantizer_dropout: 0.0 ## 1/12 = 0.0833  
+DAC_VRVQ_FeatureDenoise.use_framewise_dropout: false
+
+DAC_VRVQ_FeatureDenoise.n_codebooks: 8
+DAC_VRVQ_FeatureDenoise.codebook_size: 1024
+DAC_VRVQ_FeatureDenoise.codebook_dim: 8
+
+DAC_VRVQ_FeatureDenoise.n_denoise_layers: 10
+DAC_VRVQ_FeatureDenoise.denoise_proj_dim: 128 ## Dimension for Mamba
+
+
+DAC_VRVQ_FeatureDenoise.level_min: 0.1
+DAC_VRVQ_FeatureDenoise.level_max: 6
+DAC_VRVQ_FeatureDenoise.imp2mask_alpha: 2
+DAC_VRVQ_FeatureDenoise.imp2mask_func: "logcosh"
+DAC_VRVQ_FeatureDenoise.imp_map_input: "feature"
+DAC_VRVQ_FeatureDenoise.detach_imp_map_input: true
+
+## Straight
+DAC_VRVQ_FeatureDenoise.level_dist: "log_uniform"
+DAC_VRVQ_FeatureDenoise.operator_mode: "scaling"
+
+lambdas: ## For generator. 
+  mel/loss: 15.0
+  adv/feat_loss: 2.0
+  adv/gen_loss: 1.0
+  vq/commitment_loss: 0.25
+  vq/codebook_loss: 1.0
+  vq/rate_loss: 3.0
+  enc_feat/feat_loss: 0.1
+
+# resume: true
+# feat_train_step: 50000
+
+
+# resume: true
+# load_weights: true
+# # tag: 'best'

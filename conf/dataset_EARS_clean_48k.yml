@@ -1,0 +1,29 @@
+## Sampling rate
+DAC_VRVQ.sample_rate: 48000
+Discriminator.sample_rate: 48000
+
+# Data
+batch_size: 16
+train/AudioDataset_EARS_Clean.duration: 0.8
+train/AudioDataset_EARS_Clean.n_examples: 10000000
+
+val_batch_size: 4
+val/AudioDataset_EARS_Clean.duration: 3.0
+val/AudioDataset_EARS_Clean.n_examples: 32
+
+AudioLoader_EARS_Clean.shuffle: true
+AudioDataset_EARS_Clean.without_replacement: true
+
+train/build_dataset.folders:
+  clean:
+    - /data2/yoongi/dataset/EARS_dataset/ears_benchmark/ears_wham/EARS-WHAM/train/clean
+
+
+val/build_dataset.folders:
+  clean:
+    - /data2/yoongi/dataset/EARS_dataset/ears_benchmark/ears_wham/EARS-WHAM/valid/clean
+
+
+test/build_loader.folders:
+  clean:
+    - /data2/yoongi/dataset/EARS_dataset/ears_benchmark/ears_wham/EARS-WHAM/test/clean

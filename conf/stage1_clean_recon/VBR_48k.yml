@@ -1,0 +1,34 @@
+$include:
+  - conf/base_clean.yml
+  - conf/training.yml
+  - conf/dataset_EARS_clean_48k.yml
+
+DAC_VRVQ.model_type: "VBR"
+
+DAC_VRVQ.full_codebook_rate: 0.25
+DAC_VRVQ.quantizer_dropout: 0.0
+DAC_VRVQ.use_framewise_dropout: false
+
+# Quantization
+DAC_VRVQ.n_codebooks: 8
+DAC_VRVQ.codebook_size: 1024
+DAC_VRVQ.codebook_dim: 8
+# DAC_VRVQ.quantizer_dropout: 0.5
+
+DAC_VRVQ.level_min: 0.1
+DAC_VRVQ.level_max: 6
+DAC_VRVQ.imp2mask_alpha: 2
+DAC_VRVQ.imp2mask_func: "logcosh"
+DAC_VRVQ.imp_map_input: "feature"
+DAC_VRVQ.detach_imp_map_input: true
+
+DAC_VRVQ.level_dist: "log_uniform" ## sampling distribution of levels
+DAC_VRVQ.operator_mode: "scaling"
+
+lambdas: ## For generator. 
+  mel/loss: 15.0
+  adv/feat_loss: 2.0
+  adv/gen_loss: 1.0
+  vq/commitment_loss: 0.25
+  vq/codebook_loss: 1.0
+  vq/rate_loss: 3.0  ## \lambda_R
