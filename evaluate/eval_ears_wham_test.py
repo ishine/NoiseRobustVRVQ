@@ -347,6 +347,7 @@ def eval(
     save_path = Path(save_result_dir) / f'{name}_{state.tag}'
     
     """If there is csv file, load it."""
+    os.makedirs(save_path, exist_ok=True)
     csv_path_cur = save_path / "evaluation_results_cur.csv"
     try:
         df_load = pd.read_csv(csv_path_cur)
