@@ -151,12 +151,12 @@ mprofile_*
 mem.png
 
 make_html/
-
+output_samples/
 
 # results*/
 mprofile*
 *.png
-*.csv
+# *.csv
 # do not ignore the test wav file
 !tests/audio/short_test_audio.wav
 !tests/audio/output.wav

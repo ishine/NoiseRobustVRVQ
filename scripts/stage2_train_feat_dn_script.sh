@@ -2,7 +2,7 @@
 
 # ex) bash scripts/stage2_train_feat_dn_script.sh VBR_feat_denoise_16k 0
 CONFIG_DIR=conf/stage2_denoising/
-SAVE_DIR=/data2/yoongi/NoiseRobustVRVQ_mambatest/stage2/
+SAVE_DIR=/data2/yoongi/NoiseRobustVRVQ/stage2/
 
 EXPNAME=${1}
 GPU=${2}
