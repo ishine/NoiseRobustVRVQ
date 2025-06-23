@@ -3,9 +3,7 @@
 
 **Official implementation** of “Towards Bitrate-Efficient and Noise-Robust Speech Coding with Variable Bitrate RVQ” (INTERSPEECH 2025).
 
-**Paper Link**: *To be added*
-
-
+**Paper Link**: [arXiv](https://arxiv.org/abs/2506.16538)
 
 ## 🔊 Audio Samples  
 Model outputs (audio samples & importance maps) are available here:  
