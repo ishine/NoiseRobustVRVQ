@@ -2,10 +2,10 @@ $include:
   - conf/base_feat_denoise.yml
   - conf/training.yml
   - conf/training_500k.yml
-  - conf/dataset_EARS_noisy_48k.yml
+  - conf/dataset_EARS_noisy_16k.yml
 
 ## Load pre-trained stage1 model
-pretrained_path: "/data2/yoongi/NoiseRobustVRVQ/stage1/VBR_48k/latest"
+pretrained_path: "/data2/yoongi/NoiseRobustVRVQ/stage1/VBR_16k/latest"
 train_with_clean: true
 
 DAC_VRVQ_FeatureDenoise.clean_train: true ## if false, self.freeze_non_denoising_blocks()
@@ -45,8 +45,7 @@ lambdas: ## For generator.
   vq/commitment_loss: 0.25
   vq/codebook_loss: 1.0
   vq/rate_loss: 3.0
-  # enc_feat/feat_loss: 0.1
-  enc_feat/feat_loss: 2.0
+  enc_feat/feat_loss: 10.0
 
 # resume: true
 # feat_train_step: 50000

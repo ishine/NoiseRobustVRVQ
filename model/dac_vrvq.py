@@ -17,7 +17,7 @@ from audiotools.ml import BaseModel
 from .layers import Snake1d, WNConv1d
 from .layers import init_weights, ResidualUnit, \
     EncoderBlock, DecoderBlock
-from .layers_mamba import DenoisingMambaBlock
+from .layers_mamba import DenoisingMambaBlock, LearnableSigmoid1D
 from .dac_base import CodecMixin
 from .quantize import ResidualVectorQuantize, VBRResidualVectorQuantize
 
@@ -290,11 +290,17 @@ class EncoderWithFeatureDenoiser(nn.Module):
         clean_train: bool = False,
         n_denoise_layers: int = 10,
         denoise_proj_channels: int = 128,
+        use_modulation: bool = False,
         # feature_denoise_mode: str = "additive",
     ):
         """
         pre-trained model must be loaded.
         SUPER HARD-CODED
+        
+        ** use_modulation option:
+        Adapted from the paper 
+        Li et al., "Speech Enhancement Using Continuous Embeddings of Neural Audio Codec", ICASSP 2025
+        https://arxiv.org/pdf/2502.16240
         """
         super().__init__()
         self.block = [WNConv1d(1, d_model, kernel_size=7, padding=3)]
@@ -318,6 +324,11 @@ class EncoderWithFeatureDenoiser(nn.Module):
         self.strides = strides
         self.dn_block_idx = denoise_block_idx
         
+        if use_modulation:
+            mamba_activation='none'
+        else:
+            mamba_activation='lsigmoid'
+        
         self.block_denoise_dict = nn.ModuleDict(
             {f"block_denoise_{idx}": DenoisingMambaBlock(
                 n_layer=n_denoise_layers,
@@ -326,7 +337,7 @@ class EncoderWithFeatureDenoiser(nn.Module):
                 d_state=16,
                 d_conv=4,
                 expand=4,
-                activation='lsigmoid'
+                activation=mamba_activation
             ) for idx in denoise_block_idx}
         )
         self.clean_train = clean_train
@@ -337,6 +348,25 @@ class EncoderWithFeatureDenoiser(nn.Module):
         self.n_strides = len(self.strides) ## 4
         
         self.denoise_block_idx = denoise_block_idx
+        
+        self.use_modulation = use_modulation
+        if use_modulation:
+            self.path_sigmoid = nn.ModuleDict(
+                {f"path_sigmoid_{idx}": nn.Sequential(
+                    WNConv1d(d_model_list[idx-1], d_model_list[idx-1], kernel_size=1, padding=0),
+                    LearnableSigmoid1D(d_model_list[idx-1])
+                ) for idx in denoise_block_idx}
+            )
+            self.path_snake = nn.ModuleDict(
+                {f"path_snake_{idx}": nn.Sequential(
+                    WNConv1d(d_model_list[idx-1], d_model_list[idx-1], kernel_size=1, padding=0),
+                    Snake1d(d_model_list[idx-1])
+                ) for idx in denoise_block_idx}
+            )
+            self.path_activation = nn.ModuleDict(
+                {f"path_activation_{idx}": Snake1d(d_model_list[idx-1])
+                    for idx in denoise_block_idx}
+            )
         
         
     def freeze_non_denoising_blocks(self):
@@ -373,7 +403,15 @@ class EncoderWithFeatureDenoiser(nn.Module):
             x = self.block[ii](x) ## freezed => not updated. 
             if ii in self.denoise_block_idx:
                 f_dn = self.block_denoise_dict[f"block_denoise_{ii}"](x)
-                x = f_dn * x ## Mamba Denoising Block
+                if self.use_modulation:
+                    out_sigmoid = self.path_sigmoid[f"path_sigmoid_{ii}"](f_dn)
+                    out_snake = self.path_snake[f"path_snake_{ii}"](f_dn)
+                    out_modulated = out_sigmoid * out_snake
+                    # import pdb; pdb.set_trace()
+                    out_feat = self.path_activation[f"path_activation_{ii}"](out_modulated)
+                    x = out_feat * x ## Mamba Denoising Block
+                else:
+                    x = f_dn * x ## Mamba Denoising Block
                 fmap_noisy[f"denoised_{ii}"] = x
         
         fmap_noisy["imp_map_input"] = x
@@ -416,6 +454,8 @@ class DAC_VRVQ_FeatureDenoise(BaseModel, CodecMixin):
         
         ## Feature Denoiser
         denoise_block_idx: List[int] = [1, 3], ## Denoising blocks after these blocks.
+        # Adapted from the paper "Speech Enhancement Using Continuous Embeddings of Neural Audio Codec" (Li et al., ICASSP 2025)
+        use_modulation: bool=False, 
         
         ## VBR Configs
         model_type: str="VBR", ## in ["VBR", "CBR"]
@@ -458,6 +498,7 @@ class DAC_VRVQ_FeatureDenoise(BaseModel, CodecMixin):
             clean_train=clean_train,
             n_denoise_layers=n_denoise_layers,
             denoise_proj_channels=denoise_proj_channels,
+            use_modulation= use_modulation,
         )
 
         self.n_codebooks = n_codebooks

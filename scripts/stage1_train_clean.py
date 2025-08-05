@@ -155,6 +155,8 @@ def load(
     with argbind.scope(args, "discriminator"):
         optimizer_d = AdamW(discriminator.parameters(), use_zero=accel.use_ddp)
         scheduler_d = ExponentialLR(optimizer_d)
+    
+    # import pdb; pdb.set_trace()
         
     if "optimizer.pth" in g_extra:
         optimizer_g.load_state_dict(g_extra["optimizer.pth"])
@@ -308,6 +310,9 @@ def train_loop(state, batch, accel, lambdas):
 
     output["other/learning_rate_g"] = state.optimizer_g.param_groups[0]["lr"]
     output["other/batch_size"] = signal_clean.batch_size * accel.world_size
+    
+    output["other/signal_mean"] = signal_clean.audio_data.mean().item()
+    output["other/signal_std"] = signal_clean.audio_data.std().item()
 
     # if out["mask_imp"] is not None:
         # bits_per_codebook = [math.ceil(math.log2(cs)) for cs in state.generator.quantizer.codebook_size]

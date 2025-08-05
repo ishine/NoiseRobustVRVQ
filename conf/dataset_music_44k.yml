@@ -1,0 +1,30 @@
+## Sampling rate
+DAC_VRVQ.sample_rate: 44100
+Discriminator.sample_rate: 44100
+
+# Data
+batch_size: 32
+train/AudioDataset_EARS_Clean.duration: 0.38
+train/AudioDataset_EARS_Clean.n_examples: 10000000
+
+val_batch_size: 2
+val/AudioDataset_EARS_Clean.duration: 5.0
+val/AudioDataset_EARS_Clean.n_examples: 128
+
+AudioLoader_EARS_Clean.shuffle: true
+AudioDataset_EARS_Clean.without_replacement: true
+
+train/build_dataset.folders:
+  clean:
+    - /data2/yoongi/dataset/mtg_jamendo/
+    # - /data2/yoongi/dataset/musdb18hq_from_zenodo/train/
+    # - /data2/yoongi/dataset/moisesdb
+
+val/build_dataset.folders:
+  clean:
+    - /data2/yoongi/dataset/musdb18hq_from_zenodo/test/
+
+
+test/build_loader.folders:
+  clean:
+    - /data2/yoongi/dataset/musdb18hq_from_zenodo/test/

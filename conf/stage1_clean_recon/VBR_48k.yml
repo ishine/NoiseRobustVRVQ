@@ -1,6 +1,6 @@
 $include:
   - conf/base_clean.yml
-  - conf/training.yml
+  - conf/training_500k.yml
   - conf/dataset_EARS_clean_48k.yml
 
 DAC_VRVQ.model_type: "VBR"

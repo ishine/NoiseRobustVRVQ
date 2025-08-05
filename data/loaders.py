@@ -227,8 +227,11 @@ class AudioLoader_EARS_Clean:
         shuffle_state: int = 0,
     ):
 
+        # clean_list = util.read_sources(
+        #     srcs_clean, relative_path="", ext=[".wav"]
+        # )
         clean_list = util.read_sources(
-            srcs_clean, relative_path="", ext=[".wav"]
+            srcs_clean, relative_path="", ext=util.AUDIO_EXTENSIONS
         )
         self.clean_list = []
         for clist in clean_list:
@@ -240,6 +243,7 @@ class AudioLoader_EARS_Clean:
             shuffle_idx = list(range(len(self.clean_list)))
             state.shuffle(shuffle_idx)
             self.clean_list = [self.clean_list[ii] for ii in shuffle_idx]
+        # import pdb; pdb.set_trace()
 
     def __call__(
         self,
@@ -289,6 +293,8 @@ class AudioLoader_EARS_Clean:
             "item_idx": item_idx,
             "path_clean": str(clean_path),
         }
+        # print("### Loaded:", items['path_clean'])
+        # print(f"# Signal std: {items['signal_clean'].audio_data.std().item():.4f}, mean: {items['signal_clean'].audio_data.mean().item():.4f}")
         
         return items
     
