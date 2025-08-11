@@ -6,7 +6,6 @@ __pycache__/
 # C extensions
 *.so
 
-!evaluate/fig_curve/*.png
 
 # Distribution / packaging
 .Python
@@ -157,6 +156,9 @@ output_samples/
 # results*/
 mprofile*
 *.png
+
+!evaluate/fig_curve/*.png
+
 # *.csv
 # do not ignore the test wav file
 !tests/audio/short_test_audio.wav
