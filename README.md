@@ -43,6 +43,15 @@ $ bash scripts/stage2_train_feat_dn_script.sh VBR_feat_denoise_16k 0
 ```
 Other experiment configurations can be found in the `conf/stage1_clean_recon` and `conf/stage2_denoising` directories.
 
+
+## 📂 Checkpoints
+Trained model checkpoints can be downloaded from the following link:
+
+conf/stage2_denoising/VBR_feat_denoise_16k_modulation: [Google Drive](https://drive.google.com/file/d/1dUdrP2p7hxNFp4ipKdM3ioCWnbdDOm8D/view?usp=sharing)
+
+
+conf/stage2_denoising/VBR_feat_denoise_48k_modulation: [Google Drive](https://drive.google.com/file/d/1LRjhCHiGMonejbDYcs0K7Ljz8P4iE38s/view?usp=sharing)
+
 ## 🧪 Evaluation
 To evaluate on the EARS-WHAM test set, run:
 ```

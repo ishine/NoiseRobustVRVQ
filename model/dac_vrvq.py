@@ -423,6 +423,7 @@ class EncoderWithFeatureDenoiser(nn.Module):
     def forward(self, x_noisy, x_gt):
         assert x_noisy is not None
         
+        outs = {}
         fmaps = {}
         if x_gt is not None:
             x_gt, fmap_gt = self.forward_gt(x_gt)
@@ -431,10 +432,13 @@ class EncoderWithFeatureDenoiser(nn.Module):
         
         x_n, fmap_n = self.forward_noisy(x_noisy)
         
+        outs["z"] = x_n
+        outs["z_clean"] = x_gt
+        
         fmaps["gt"] = fmap_gt
         fmaps["noisy"] = fmap_n
         # print("self.denoise_block_idx", self.denoise_block_idx)
-        return x_n, fmaps    
+        return outs, fmaps    
     
 
 class DAC_VRVQ_FeatureDenoise(BaseModel, CodecMixin):
@@ -563,6 +567,7 @@ class DAC_VRVQ_FeatureDenoise(BaseModel, CodecMixin):
         audio_data_gt: torch.Tensor,
         n_quantizers: int = None,
         level: int = 1, ## Scale Factor, only used in VBR inference. 
+        infer_clean_without_denoising: bool = False, ## Just for testing purpose.
     ):
         """
         audio_data: (B, 1, T)
@@ -585,19 +590,28 @@ class DAC_VRVQ_FeatureDenoise(BaseModel, CodecMixin):
             - Projected latents (continuous representation of input before quantization)
         "vq/commitment_loss" : (1)
         "vq/codebook_loss" : (1)
-        
         """
         # import pdb; pdb.set_trace()        
-        z, fmaps = self.encoder(
+        outs, fmaps = self.encoder(
             x_noisy=audio_data_noisy,
             x_gt=audio_data_gt,
         ) ## fmaps: {"gt": fmap_gt, "noisy": fmap_n}
+        z = outs["z"]  ## (B, D, T)
+        z_clean = outs["z_clean"]  ## (B, D, T)
+        feat_enc = fmaps["noisy"]["imp_map_input"]  ## (B, D, T)
+        
+        if infer_clean_without_denoising:
+            assert z_clean is not None, "z_clean must be provided when infer_clean_without_denoising is True."
+            z = z_clean ## Use clean representation directly without denoising.
+            feat_enc = fmaps["gt"]["imp_map_input"]  ## Use clean feature map directly without denoising.
+            
+        
         
         if self.model_type == "CBR":
             quant_inp = {"z": z, "n_quantizers": n_quantizers}
         elif self.model_type == "VBR":
             quant_inp = {"z": z, "n_quantizers": n_quantizers,
-                         "feat_enc": fmaps['noisy']['imp_map_input'], 
+                         "feat_enc": feat_enc, 
                          "level": level}
         
         out_quant_dict = self.quantizer(**quant_inp)
@@ -618,7 +632,11 @@ class DAC_VRVQ_FeatureDenoise(BaseModel, CodecMixin):
         sample_rate: int = None,
         n_quantizers: int = None,
         level: int = 1,
+        infer_clean_without_denoising: bool = False, ## Just for testing purpose.
     ):
+        if infer_clean_without_denoising:
+            assert audio_data_clean is not None
+            
         length = audio_data_noisy.shape[-1]
         audio_data_noisy = self.preprocess(audio_data_noisy, sample_rate)
         if audio_data_clean is not None:
@@ -628,6 +646,7 @@ class DAC_VRVQ_FeatureDenoise(BaseModel, CodecMixin):
             "audio_data_noisy": audio_data_noisy,
             "audio_data_gt": audio_data_clean,
             "n_quantizers": n_quantizers,
+            "infer_clean_without_denoising": infer_clean_without_denoising, ## Just for testing purpose.
         }
         if self.model_type == "CBR":
             pass

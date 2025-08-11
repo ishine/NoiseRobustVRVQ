@@ -120,7 +120,6 @@ def test_loop(signal_clean, signal_noisy, state, save_figs=None, cal_visqol=True
     audio_noisy = signal_noisy.audio_data
     sr = signal_clean.sample_rate
 
-
     out_fixed = state.generator(audio_data_noisy=audio_noisy,
                                 audio_data_clean=None,
                                 sample_rate=sr,
@@ -338,7 +337,8 @@ def eval(
     accel: ml.Accelerator,
     save_path: str = "ckpt",
     save_result_dir: str = None,
-    cal_visqol: bool = True
+    cal_visqol: bool = False,
+    aa:str = None,
 ):
     state = load(args, accel, save_path)
     assert save_result_dir is not None
